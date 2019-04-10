@@ -8,8 +8,7 @@ wget https://archive.apache.org/dist/kylin/apache-kylin-2.5.1/apache-kylin-2.5.1
 
 ```
 VERSION=`hdp-select status hadoop-client | sed 's/hadoop-client - \([0-9]\.[0-9]\).*/\1/'`
-sudo git clone https://github.com/ZZZKROSS/ambari-kylin-service.git
-/var/lib/ambari-server/resources/stacks/HDP/$VERSION/services/KYLIN
+sudo git clone https://github.com/ZZZKROSS/ambari-kylin-service.git /var/lib/ambari-server/resources/stacks/HDP/$VERSION/services/KYLIN
 ```
 ## Restart Ambari
 service ambari restart
