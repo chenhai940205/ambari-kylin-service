@@ -3,9 +3,7 @@ ambari-kylin-service
 
 ## To download the Kylin service folder, run below    
 
-## HDP2.6与Kylin2.5.1集成使用的一版
-
-## 下载kylin
+HDP2.6中使用Kylin2.5.1
 wget https://archive.apache.org/dist/kylin/apache-kylin-2.5.1/apache-kylin-2.5.1-bin-hbase1x.tar.gz
 
 ```
