@@ -7,7 +7,7 @@
     <name>kylin_properties</name>
     <description>This is the jinja template for init.conf file</description>
     <value>
-#
+     #
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -24,107 +24,138 @@
 # limitations under the License.
 #
 
-### METADATA | ENV ###
-
-# The metadata store in hbase
-kylin.metadata.url=kylin_metadata@hbase
-
-# Working folder in HDFS, make sure user has the right access to the hdfs directory
-kylin.env.hdfs-working-dir=/kylin
-
-# DEV|QA|PROD. DEV will turn on some dev features, QA and PROD has no difference in terms of functions.
-kylin.env=QA
-
-### SERVER | WEB ###
+### SERVICE ###
 
 # Kylin server mode, valid value [all, query, job]
-kylin.server.mode={{server_mode}}
-
-# List of web servers in use, this enables one web server instance to sync up with other servers.
-kylin.server.cluster-servers={{server_clusters}}
-
-# Display timezone on UI,format like[GMT+N or GMT-N]
-kylin.web.timezone=GMT+8
-
-kylin.web.cross-domain-enabled=true
-
-
-### SOURCE ###
-
-# Hive client, valid value [cli, beeline]
-kylin.source.hive.client=cli
-
-# Parameters for beeline client, only necessary if hive client is beeline
-#kylin.source.hive.beeline-params=-n root --hiveconf hive.security.authorization.sqlstd.confwhitelist.append='mapreduce.job.*|dfs.*' -u jdbc:hive2://localhost:10000
-
-kylin.source.hive.keep-flat-table=false
-
-# Hive database name for putting the intermediate flat tables
-kylin.source.hive.database-for-flat-table=default
-
-# Whether redistribute the intermediate flat table before building
-kylin.source.hive.redistribute-flat-table=true
-
-
-### STORAGE ###
-
-# The storage for cube is hbase
-kylin.storage.url=hbase
-
-# Compression codec for htable, valid value [none, snappy, lzo, gzip, lz4]
-kylin.storage.hbase.compression-codec=none
-
-# HBase Cluster FileSystem, which serving hbase, format as hdfs://hbase-cluster:8020
-# Leave empty if hbase running on same cluster with hive and mapreduce
-#kylin.storage.hbase.cluster-fs=
-
-# The cut size for hbase region, in GB.
-kylin.storage.hbase.region-cut-gb=5
-
-# The hfile size of GB, smaller hfile leading to the converting hfile MR has more reducers and be faster.
-# Set 0 to disable this optimization.
-kylin.storage.hbase.hfile-size-gb=2
-
-kylin.storage.hbase.min-region-count=1
-kylin.storage.hbase.max-region-count=500
+kylin.server.mode=all
 
 # Optional information for the owner of kylin platform, it can be your team's email
 # Currently it will be attached to each kylin's htable attribute
 kylin.storage.hbase.owner-tag=whoami@kylin.apache.org
 
-kylin.storage.hbase.coprocessor-mem-gb=3
+# List of web servers in use, this enables one web server instance to sync up with other servers.
+kylin.server.cluster-servers=localhost:7070
 
-# By default kylin can spill query's intermediate results to disks when it's consuming too much memory.
-# Set it to false if you want query to abort immediately in such condition.
-kylin.storage.partition.aggr-spill-enabled=true
+# Display timezone on UI,format like[GMT+N or GMT-N]
+kylin.web.timezone=GMT+8
 
-# The maximum number of bytes each coprocessor is allowed to scan.
-# To allow arbitrary large scan, you can set it to 0.
-kylin.storage.partition.max-scan-bytes=3221225472
+### SOURCE ###
 
-# The default coprocessor timeout is (hbase.rpc.timeout * 0.9) / 1000 seconds,
-# You can set it to a smaller value. 0 means use default.
-# kylin.storage.hbase.coprocessor-timeout-seconds=0
+# Hive client, valid value [cli, beeline]
+kylin.source.hive.client=cli
+#kylin.source.hive.beeline-params=-n root --hiveconf hive.security.authorization.sqlstd.confwhitelist.append='mapreduce.job.*|dfs.*' -u 'jdbc:hive2://localhost:10000'
+
+### STORAGE ###
+
+# The metadata store in hbase
+kylin.metadata.url=kylin_metadata@hbase
+
+
+# The storage for final cube file in hbase
+kylin.storage.url=hbase
+
+# Working folder in HDFS, make sure user has the right access to the hdfs directory
+kylin.env.hdfs-working-dir=/kylin
+
+kylin.env.zookeeper-connect-string=sandbox.hortonworks.com
+
+# HBase Cluster FileSystem, which serving hbase, format as hdfs://hbase-cluster:8020
+# Leave empty if hbase running on same cluster with hive and mapreduce
+#kylin.storage.hbase.cluster-fs=
+
+
+kylin.engine.mr.reduce-input-mb=500
+
+kylin.engine.mr.uhc-config-override.mapreduce.reduce.memory.mb=500
+kylin.engine.mr.uhc-config-override.mapred.reduce.child.java.opts=-Xmx400M
 
 
 ### JOB ###
 
-# Max job retry on error, default 0: no retry
+# max job retry on error, default 0: no retry
 kylin.job.retry=0
+kylin.job.scheduler.default=100
+# If true, job engine will not assume that hadoop CLI reside on the same server as it self
+# you will have to specify kylin.job.remote-cli-hostname, kylin.job.remote-cli-username and kylin.job.remote-cli-password
+# It should not be set to "true" unless you're NOT running Kylin.sh on a hadoop client machine
+# (Thus kylin instance has to ssh to another real hadoop client machine to execute hbase,hive,hadoop commands)
+kylin.job.use-remote-cli=true
+
+# Only necessary when kylin.job.use-remote-cli=true
+kylin.job.remote-cli-hostname=sandbox
+
+kylin.job.remote-cli-username=root
+
+# Only necessary when kylin.job.use-remote-cli=true
+kylin.job.remote-cli-password=hadoop
+
+# Used by test cases to prepare synthetic data for sample cube
+kylin.job.remote-cli-working-dir=/tmp/kylin
 
 # Max count of concurrent jobs running
 kylin.job.max-concurrent-jobs=10
 
+kylin.source.hive.redistribute-flat-table=false
+
+# Time interval to check hadoop job status
+kylin.engine.mr.yarn-check-interval-seconds=10
+
+# Hive database name for putting the intermediate flat tables
+kylin.source.hive.database-for-flat-table=default
+
+# Hive flat table storage format, defaults to sequencefile
+#kylin.source.hive.flat-table-storage-format=textfile
+
+# Hive flat table field delimiter; used only when kylin.source.hive.flat-table-storage-format is set to textfile; defaults to \u001F (unit separator)
+#kylin.source.hive.flat-table-field-delimiter=\\u001F
+
+
+#default compression codec for htable,snappy,lzo,gzip,lz4
+kylin.storage.hbase.compression-codec=gzip
+
+# Max reducer number
+kylin.engine.mr.max-reducer-number=5
+
 # The percentage of the sampling, default 100%
 kylin.job.sampling-percentage=100
 
-# Whether get job status from resource manager with kerberos authentication
-kylin.job.status.with.kerberos=false
+# The cut size for hbase region, in GB.
+# E.g, for cube whose capacity be marked as "SMALL", split region per 10GB by default
+kylin.storage.hbase.region-cut-gb=0.1
+kylin.storage.hbase.max-region-count=5
 
-# Timeout in seconds
-kylin.job.step.timeout=7200
+# The hfile size of GB, smaller hfile leading to the converting hfile MR has more reducers and be faster
+# set 0 to disable this optimization
+kylin.storage.hbase.hfile-size-gb=2
 
-# If true, will send email notification on job complete
+# for test
+kylin.job.lock=org.apache.kylin.job.lock.MockJobLock
+kylin.engine.mr.uhc-reducer-count=3
+
+### CUBE ###
+
+# dictionary forest cut
+kylin.dictionary.forest-trie-max-mb=500
+
+# 'auto', 'inmem', 'layer' or 'random' for testing
+kylin.cube.algorithm=random
+
+# Enable/disable ACL check for cube query
+kylin.query.security-enabled=true
+
+### SECURITY ###
+
+# Spring security profile, options: testing, ldap, saml
+# with "testing" profile, user can use pre-defined name/pwd like KYLIN/ADMIN to login
+kylin.security.profile=testing
+
+# Admin roles in LDAP, for ldap and saml
+kylin.security.acl.admin-role=admin
+
+
+### MAIL ###
+
+# If true, will send email notification;
 #kylin.job.notification-enabled=true
 #kylin.job.notification-mail-enable-starttls=true
 #kylin.job.notification-mail-host=smtp.office365.com
@@ -133,119 +164,71 @@ kylin.job.step.timeout=7200
 #kylin.job.notification-mail-password=mypassword
 #kylin.job.notification-mail-sender=kylin@example.com
 
+### WEB ###
 
-### ENGINE ###
+# Help info, format{name|displayName|link}, optional
+kylin.web.help.length=4
+kylin.web.help.0=start|Getting Started|http://kylin.apache.org/docs/tutorial/kylin_sample.html
+kylin.web.help.1=odbc|ODBC Driver|http://kylin.apache.org/docs/tutorial/odbc.html
+kylin.web.help.2=tableau|Tableau Guide|http://kylin.apache.org/docs/tutorial/tableau_91.html
+kylin.web.help.3=onboard|Cube Design Tutorial|http://kylin.apache.org/docs/howto/howto_optimize_cubes.html
 
-# Time interval to check hadoop job status
-kylin.engine.mr.yarn-check-interval-seconds=10
+#allow user to export query result
+kylin.web.export-allow-admin=true
+kylin.web.export-allow-other=true
 
-kylin.engine.mr.reduce-input-mb=500
+# Hide measures in measure list of cube designer, separate by comma
+kylin.web.hide-measures=RAW
 
-kylin.engine.mr.max-reducer-number=500
+### OTHER ###
 
-kylin.engine.mr.mapper-input-rows=1000000
+# kylin query metrics percentiles intervals default=60, 300, 3600
+kylin.server.query-metrics-percentiles-intervals=60, 360, 3600
 
-# Enable dictionary building in MR reducer
-kylin.engine.mr.build-dict-in-reducer=true
-
-# Number of reducers for fetching UHC column distinct values
-kylin.engine.mr.uhc-reducer-count=1
-
-### CUBE | DICTIONARY ###
-
-# 'auto', 'inmem' or 'layer'
-kylin.cube.algorithm=layer
-
-# A smaller threshold prefers layer, a larger threshold prefers in-mem
-kylin.cube.algorithm.layer-or-inmem-threshold=7
-
-kylin.cube.aggrgroup.max-combination=4096
-
-kylin.snapshot.max-mb=300
+# Env DEV|QA|PROD
+kylin.env=DEV
+kylin.source.hive.keep-flat-table=false
 
 
-### QUERY ###
+# Estimate the RDD partition numbers, the test cubes have a couple memory-hungry measure so the estimation is wild
+kylin.engine.spark.rdd-partition-cut-mb=100
 
-# Controls the maximum number of bytes a query is allowed to scan storage.
-# The default value 0 means no limit.
-# The counterpart kylin.storage.partition.max-scan-bytes sets the maximum per coprocessor.
-kylin.query.max-scan-bytes=0
-
-kylin.query.udf.version=org.apache.kylin.query.udf.VersionUDF
-kylin.query.udf.concat=org.apache.kylin.query.udf.ConcatUDF
-
-kylin.query.cache-enabled=true
-
-
-### SECURITY ###
-
-# Spring security profile, options: testing, ldap, saml
-# with "testing" profile, user can use pre-defined name/pwd like KYLIN/ADMIN to login
-kylin.security.profile=testing
-
-# Default roles and admin roles in LDAP, for ldap and saml
-kylin.security.acl.default-role=ROLE_ANALYST,ROLE_MODELER
-kylin.security.acl.admin-role=ROLE_ADMIN
-
-# LDAP authentication configuration
-kylin.security.ldap.connection-server=ldap://ldap_server:389
-kylin.security.ldap.connection-username=
-kylin.security.ldap.connection-password=
-
-# LDAP user account directory;
-kylin.security.ldap.user-search-base=
-kylin.security.ldap.user-search-pattern=
-kylin.security.ldap.user-group-search-base=
-
-# LDAP service account directory
-kylin.security.ldap.service-search-base=
-kylin.security.ldap.service-search-pattern=
-kylin.security.ldap.service-group-search-base=
-
-## SAML configurations for SSO
-# SAML IDP metadata file location
-kylin.security.saml.metadata-file=classpath:sso_metadata.xml
-kylin.security.saml.metadata-entity-base-url=https://hostname/kylin
-kylin.security.saml.context-scheme=https
-kylin.security.saml.context-server-name=hostname
-kylin.security.saml.context-server-port=443
-kylin.security.saml.context-path=/kylin
-
-
-### Spark Engine Configs ###
-
-# Hadoop conf folder, will export this as "HADOOP_CONF_DIR" to run spark-submit
-# This must contain site xmls of core, yarn, hive, and hbase in one folder
-kylin.env.hadoop-conf-dir={{hadoop_conf_dir}}
-
-# Estimate the RDD partition numbers
-kylin.engine.spark.rdd-partition-cut-mb=10
-
-# Minimal partition numbers of rdd
-kylin.engine.spark.min-partition=1
-
-# Max partition numbers of rdd
-kylin.engine.spark.max-partition=5000
-
-## Spark conf (default is in spark/conf/spark-defaults.conf)
-#kylin.engine.spark-conf.spark.master=yarn
+### Spark conf overwrite for cube engine
+kylin.engine.spark-conf.spark.yarn.submit.file.replication=1
+kylin.engine.spark-conf.spark.master=yarn
 #kylin.engine.spark-conf.spark.submit.deployMode=cluster
-#kylin.engine.spark-conf.spark.yarn.queue=default
-#kylin.engine.spark-conf.spark.executor.memory=4G
-#kylin.engine.spark-conf.spark.executor.cores=4
-#kylin.engine.spark-conf.spark.executor.instances=2
-#kylin.engine.spark-conf.spark.eventLog.enabled=true
-#kylin.engine.spark-conf.spark.eventLog.dir=hdfs\:///kylin/spark-history
-#kylin.engine.spark-conf.spark.history.fs.logDirectory=hdfs\:///kylin/spark-history
+kylin.engine.spark-conf.spark.yarn.executor.memoryOverhead=384
+kylin.engine.spark-conf.spark.yarn.driver.memoryOverhead=256
+kylin.engine.spark-conf.spark.executor.memory=768M
+kylin.engine.spark-conf.spark.executor.cores=1
+kylin.engine.spark-conf.spark.executor.instances=1
+kylin.engine.spark-conf.spark.eventLog.enabled=true
+kylin.engine.spark-conf.spark.history.fs.logDirectory=hdfs\:///spark-history
+kylin.engine.spark-conf.spark.eventLog.dir=hdfs\:///spark-history
+#kylin.engine.spark-conf.spark.yarn.archive=hdfs://sandbox.hortonworks.com:8020/kylin/spark/spark-libs.jar
+kylin.engine.spark-conf.spark.driver.extraJavaOptions=-Dhdp.version=current
+kylin.engine.spark-conf.spark.yarn.am.extraJavaOptions=-Dhdp.version=current
+kylin.engine.spark-conf.spark.executor.extraJavaOptions=-Dhdp.version=current
+kylin.engine.spark-conf.spark.hadoop.yarn.timeline-service.enabled=false
 
-## manually upload spark-assembly jar to HDFS and then set this property will avoid repeatedly uploading jar at runtime
-#kylin.engine.spark-conf.spark.yarn.jar=hdfs://packone165:8020/kylin/spark/spark-assembly-1.6.3-hadoop2.6.0.jar
-#kylin.engine.spark-conf.spark.io.compression.codec=org.apache.spark.io.SnappyCompressionCodec
+### Spark conf for specific job
+kylin.engine.spark-conf-mergedict.spark.executor.memory=1G
+kylin.engine.spark-conf-mergedict.spark.memory.fraction=0.2
 
-## uncomment for HDP
-#kylin.engine.spark-conf.spark.driver.extraJavaOptions=-Dhdp.version={{hdp_version}}
-#kylin.engine.spark-conf.spark.yarn.am.extraJavaOptions=-Dhdp.version={{hdp_version}}
-#kylin.engine.spark-conf.spark.executor.extraJavaOptions=-Dhdp.version={{hdp_version}}
+### QUERY PUSH DOWN  ###
+#kylin.query.pushdown.runner-class-name=org.apache.kylin.query.adhoc.PushDownRunnerJdbcImpl
+
+#kylin.query.pushdown.jdbc.url=jdbc:hive2://sandbox:10000/default
+#kylin.query.pushdown.jdbc.driver=org.apache.hive.jdbc.HiveDriver
+#kylin.query.pushdown.jdbc.username=hive
+#kylin.query.pushdown.jdbc.password=
+
+#kylin.query.pushdown.jdbc.pool-max-total=8
+#kylin.query.pushdown.jdbc.pool-max-idle=8
+#kylin.query.pushdown.jdbc.pool-min-idle=0
+
+kylin.query.transformers=org.apache.kylin.query.util.DefaultQueryTransformer
+
 
     </value>
   </property>
