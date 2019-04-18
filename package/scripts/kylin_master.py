@@ -19,7 +19,7 @@ class KylinMaster(Script):
         
         #mkdir
         Execute('sudo -uhdfs hadoop fs -mkdir -p /kylin')
-        Execute('sudo -uhdfs hadoop fs -chown -R kylin:kylin /kylin')
+       # Execute('sudo -uhdfs hadoop fs -chown -R kylin:kylin /kylin')
                 
 
     def configure(self, env):  
